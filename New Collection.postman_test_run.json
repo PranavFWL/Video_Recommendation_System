@@ -1,0 +1,88 @@
+{
+	"id": "71a7c6de-698c-4d30-9068-3352b1afa89b",
+	"name": "New Collection",
+	"timestamp": "2025-03-07T09:41:10.987Z",
+	"collection_id": "42909160-f179fa0e-c681-4198-8a8e-0103c0c7f18b",
+	"folder_id": 0,
+	"environment_id": "0",
+	"totalPass": 0,
+	"delay": 0,
+	"persist": true,
+	"status": "finished",
+	"startedAt": "2025-03-07T09:41:08.213Z",
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "11d08226-cf42-4d9b-9899-e3767c8f4dc2",
+			"name": "Get Recommendations_0",
+			"url": "http://127.0.0.1:8000/recommend/0",
+			"time": 71,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				71
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "93f1bc49-d0d6-4b2c-9c25-5b7db197124d",
+			"name": "Get Recommendations_1",
+			"url": "http://127.0.0.1:8000/recommend_by_mood/1",
+			"time": 23,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				23
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "5ea755df-b80c-472c-b589-1765144a33f2",
+			"name": "Get Recommendations_-1",
+			"url": "http://127.0.0.1:8000/recommend_by_mood/-1",
+			"time": 62,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				62
+			],
+			"allTests": [
+				{}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 156,
+	"collection": {
+		"requests": [
+			{
+				"id": "11d08226-cf42-4d9b-9899-e3767c8f4dc2",
+				"method": "GET"
+			},
+			{
+				"id": "93f1bc49-d0d6-4b2c-9c25-5b7db197124d",
+				"method": "GET"
+			},
+			{
+				"id": "5ea755df-b80c-472c-b589-1765144a33f2",
+				"method": "GET"
+			}
+		]
+	}
+}
