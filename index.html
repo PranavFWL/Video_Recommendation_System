@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Recommendation System</title>
+    <link rel="icon" href="data:,"> 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            /* Removed background image and replaced with a gradient */
+            background: linear-gradient(to bottom, #2c3e50, #4ca1af);
+            color: white;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button, select, input {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        select, input {
+            width: calc(100% - 20px); 
+            box-sizing: border-box;
+        }
+        .video-container {
+            margin-top: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 315px;
+            border-radius: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+        }
+        li {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="homeScreen">
+        <h1>Welcome! Choose an Option:</h1>
+        <button onclick="showExistingUser()">I am an Existing User</button>
+        <button onclick="showNewUser()">I am a New User</button>
+        <button onclick="showHistoryScreen()">View My Video History</button>
+    </div>
+
+    <div class="container" id="existingUserScreen" style="display: none;">
+        <h2>Select Your User ID</h2>
+        <select id="userIdSelect"></select>
+        <button onclick="getRecommendations()">Get Recommendations</button>
+        <button onclick="goBack()">Go Back</button>
+        <div class="video-container" id="videoList"></div>
+    </div>
+
+    <div class="container" id="newUserScreen" style="display: none;">
+        <h2>Enter Your Name:</h2>
+        <input type="text" id="userName" placeholder="Enter your name..." />
+        <h3>How Are You Feeling?</h3>
+        <button onclick="getMoodRecommendations(1)">😊 Positive</button>
+        <button onclick="getMoodRecommendations(0)">😐 Neutral</button>
+        <button onclick="getMoodRecommendations(-1)">😢 Negative</button>
+        <button onclick="goBack()">Go Back</button>
+        <div class="video-container" id="moodVideoList"></div>
+    </div>
+
+    <div class="container" id="historyScreen" style="display: none;">
+        <h2>View Your Video History</h2>
+        <input type="text" id="historyUserName" placeholder="Enter your name..." />
+        <button onclick="getUserHistory()">View History</button>
+        <button onclick="goBack()">Go Back</button>
+        <div id="userHistoryList"></div>
+    </div>
+
+    <script>
+        const apiBaseUrl = "http://127.0.0.1:8000";
+
+        function showExistingUser() {
+            document.getElementById("homeScreen").style.display = "none";
+            document.getElementById("existingUserScreen").style.display = "block";
+            loadUserIds();
+        }
+
+        function showNewUser() {
+            document.getElementById("homeScreen").style.display = "none";
+            document.getElementById("newUserScreen").style.display = "block";
+        }
+
+        function showHistoryScreen() {
+            document.getElementById("homeScreen").style.display = "none";
+            document.getElementById("historyScreen").style.display = "block";
+        }
+
+        function goBack() {
+            document.getElementById("homeScreen").style.display = "block";
+            document.getElementById("existingUserScreen").style.display = "none";
+            document.getElementById("newUserScreen").style.display = "none";
+            document.getElementById("historyScreen").style.display = "none";
+            document.getElementById("videoList").innerHTML = "";
+            document.getElementById("moodVideoList").innerHTML = "";
+            document.getElementById("userHistoryList").innerHTML = "";
+        }
+
+        function loadUserIds() {
+            const select = document.getElementById("userIdSelect");
+            select.innerHTML = "";  
+            for (let i = 0; i < 3; i++) {  
+                let option = document.createElement("option");
+                option.value = i;
+                option.textContent = "User " + i;
+                select.appendChild(option);
+            }
+        }
+
+        function getRecommendations() {
+            const userId = document.getElementById("userIdSelect").value;
+            fetch(`${apiBaseUrl}/recommend/${userId}`)
+                .then(response => response.json())
+                .then(data => displayVideos(data.recommended_videos, "videoList"))
+                .catch(error => console.error("Error fetching recommendations:", error));
+        }
+
+        function getMoodRecommendations(mood) {
+            const userName = document.getElementById("userName").value.trim();
+            if (userName === "") {
+                alert("Please enter your name before proceeding.");
+                return;
+            }
+
+            fetch(`${apiBaseUrl}/recommend_by_mood/${mood}?user_name=${encodeURIComponent(userName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayVideos(data.recommended_videos, "moodVideoList");
+                    if (data.user_saved) {
+                        alert(`Welcome, ${userName}! Your preferences have been saved.`);
+                    }
+                })
+                .catch(error => console.error("Error fetching mood-based recommendations:", error));
+        }
+
+        function getUserHistory() {
+            const userName = document.getElementById("historyUserName").value.trim();
+            if (userName === "") {
+                alert("Please enter your name to view history.");
+                return;
+            }
+
+            fetch(`${apiBaseUrl}/user_history/${encodeURIComponent(userName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        document.getElementById("userHistoryList").innerHTML = `<p>${data.message}</p>`;
+                        return;
+                    }
+                    
+                    displayUserHistory(data.preferences);
+                })
+                .catch(error => console.error("Error fetching user history:", error));
+        }
+
+        function displayUserHistory(preferences) {
+            const container = document.getElementById("userHistoryList");
+            container.innerHTML = "";
+            
+            if (!preferences || preferences.length === 0) {
+                container.innerHTML = "<p>No video history found.</p>";
+                return;
+            }
+            
+            const historyList = document.createElement("ul");
+            
+            preferences.forEach(pref => {
+                const item = document.createElement("li");
+                const date = new Date(pref.timestamp);
+                item.innerHTML = `<strong>${pref.video_title}</strong><br>
+                                 <small>Watched on: ${date.toLocaleString()}</small>`;
+                historyList.appendChild(item);
+            });
+            
+            container.appendChild(historyList);
+        }
+
+        function displayVideos(videos, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+            console.log("Received Videos:", videos);  
+
+            if (!videos || videos.length === 0) {
+                container.innerHTML = "<p>No videos found.</p>";
+                return;
+            }
+
+            videos.forEach(video => {
+                let videoElement = document.createElement("div");
+                videoElement.innerHTML = `
+                    <h3>${video.title || "Untitled Video"}</h3>
+                    <p>${video.post_summary || ""}</p>
+                    <iframe src="${video.video_link}" allowfullscreen></iframe>
+                `;
+                container.appendChild(videoElement);
+            });
+        }
+    </script>
+</body>
+</html>
